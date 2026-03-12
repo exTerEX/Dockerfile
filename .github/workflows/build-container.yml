@@ -1,0 +1,96 @@
+name: Build and Push Containers
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**/Dockerfile"
+  workflow_dispatch:
+
+# Ensure only one build runs at a time per branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # ── aragorn ──────────────────────────────────────────────
+          - tool: aragorn
+            version: "1.2.36"
+          - tool: aragorn
+            version: "1.2.38"
+          - tool: aragorn
+            version: "1.2.41"
+            latest: true
+          # ── trnascan-se ──────────────────────────────────────────
+          - tool: trnascan-se
+            version: "2.0.0"
+          - tool: trnascan-se
+            version: "2.0.3"
+          - tool: trnascan-se
+            version: "2.0.5"
+          - tool: trnascan-se
+            version: "2.0.6"
+          - tool: trnascan-se
+            version: "2.0.7"
+          - tool: trnascan-se
+            version: "2.0.9"
+          - tool: trnascan-se
+            version: "2.0.11"
+          - tool: trnascan-se
+            version: "2.0.12"
+            latest: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute image tags
+        id: tags
+        run: |
+          IMAGE="${{ env.IMAGE_PREFIX }}/${{ matrix.tool }}"
+          VERSION="${{ matrix.version }}"
+          MAJOR="${VERSION%%.*}"
+          MINOR="${VERSION%.*}"
+
+          # Every build gets the exact version tag
+          TAGS="${IMAGE}:${VERSION}"
+
+          # The entry marked latest also gets :major, :minor, and :latest
+          if [[ "${{ matrix.latest }}" == "true" ]]; then
+            TAGS="${TAGS},${IMAGE}:${MAJOR},${IMAGE}:${MINOR},${IMAGE}:latest"
+          fi
+
+          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and Push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.tool }}/${{ matrix.version }}
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

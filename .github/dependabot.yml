@@ -1,0 +1,101 @@
+version: 2
+
+updates:
+  # Keep GitHub Actions up to date
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - github-actions
+
+  # Keep Docker base images up to date – aragorn
+  - package-ecosystem: docker
+    directory: /aragorn/1.2.36
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - docker
+
+  - package-ecosystem: docker
+    directory: /aragorn/1.2.38
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - docker
+
+  - package-ecosystem: docker
+    directory: /aragorn/1.2.41
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - docker
+
+  # Keep Docker base images up to date – trnascan-se
+  - package-ecosystem: docker
+    directory: /trnascan-se/2.0.0
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - docker
+
+  - package-ecosystem: docker
+    directory: /trnascan-se/2.0.3
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - docker
+
+  - package-ecosystem: docker
+    directory: /trnascan-se/2.0.5
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - docker
+
+  - package-ecosystem: docker
+    directory: /trnascan-se/2.0.6
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - docker
+
+  - package-ecosystem: docker
+    directory: /trnascan-se/2.0.7
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - docker
+
+  - package-ecosystem: docker
+    directory: /trnascan-se/2.0.9
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - docker
+
+  - package-ecosystem: docker
+    directory: /trnascan-se/2.0.11
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - docker
+
+  - package-ecosystem: docker
+    directory: /trnascan-se/2.0.12
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - docker
