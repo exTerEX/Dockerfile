@@ -20,12 +20,17 @@ echo "── Testing ${IMAGE} (expected v${EXPECTED_VERSION}) ──"
 
 # -------------------------------------------------------------------
 # 1. Version check (extracted from -h output)
+#    Some releases omit the patch digit (e.g. "2.0" instead of "2.0.0"),
+#    so we also accept the major.minor prefix when patch is 0.
 # -------------------------------------------------------------------
 echo ""
 echo "1) Version check"
 if OUTPUT=$(docker run --rm --entrypoint tRNAscan-SE "${IMAGE}" -h 2>&1) && \
-   echo "${OUTPUT}" | grep -qiE "tRNAscan-SE ${EXPECTED_VERSION}"; then
+   echo "${OUTPUT}" | grep -qiE "tRNAscan-SE ${EXPECTED_VERSION}( |$)"; then
   pass "Version string contains ${EXPECTED_VERSION}"
+elif TRIMMED="${EXPECTED_VERSION%.0}" && [[ "$TRIMMED" != "$EXPECTED_VERSION" ]] && \
+   echo "${OUTPUT}" | grep -qiE "tRNAscan-SE ${TRIMMED}( |$)"; then
+  pass "Version string contains ${TRIMMED} (trailing .0 omitted by program)"
 else
   fail "Version string missing (output: ${OUTPUT:0:200})"
 fi
