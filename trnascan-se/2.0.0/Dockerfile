@@ -8,7 +8,8 @@ RUN micromamba install -y -n base -c bioconda -c conda-forge \
     && find /opt/conda -follow -type f -name '*.a' -delete \
     && find /opt/conda -follow -type f -name '*.pyc' -delete
 
-ENV PATH="/opt/conda/bin:${PATH}"
+ENV PATH="/opt/conda/bin:${PATH}" \
+    LD_LIBRARY_PATH="/opt/conda/lib"
 WORKDIR /data
 
 ENTRYPOINT ["tRNAscan-SE"]
