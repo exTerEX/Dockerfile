@@ -72,8 +72,10 @@ fi
 # -------------------------------------------------------------------
 echo ""
 echo "5) Functional: parse a minimal GenBank file"
-TMPDIR=$(mktemp -d)
-cat > "${TMPDIR}/test1.gbk" <<'GBK'
+# Create files inside the container to avoid volume-mount permission issues
+# (micromamba images run as mambauser which may not read host-mounted files).
+if OUTPUT=$(docker run --rm --entrypoint sh "${IMAGE}" -c '
+cat > /tmp/test1.gbk << "GBK"
 LOCUS       SEQ1                     300 bp    DNA     linear   UNK
 DEFINITION  Test sequence 1.
 ACCESSION   SEQ1
@@ -92,8 +94,7 @@ ORIGIN
       241 tttgcaattc ttgcagcagt tgcactgtct actcaagcat tagcaatgaa aacattatga
 //
 GBK
-
-cat > "${TMPDIR}/test2.gbk" <<'GBK'
+cat > /tmp/test2.gbk << "GBK"
 LOCUS       SEQ2                     300 bp    DNA     linear   UNK
 DEFINITION  Test sequence 2.
 ACCESSION   SEQ2
@@ -112,18 +113,12 @@ ORIGIN
       241 tttgcaattc ttgcagcagt tgcactgtct actcaagcat tagcaatgaa aacattatga
 //
 GBK
-
-chmod 755 "${TMPDIR}"
-chmod 644 "${TMPDIR}"/*.gbk
-
-if OUTPUT=$(docker run --rm -v "${TMPDIR}:/data" "${IMAGE}" \
-    /data/test1.gbk /data/test2.gbk 2>&1); then
+clinker /tmp/test1.gbk /tmp/test2.gbk
+' 2>&1); then
   pass "clinker ran successfully on GenBank files"
 else
   fail "clinker failed on GenBank files (exit $?, output: ${OUTPUT:0:300})"
 fi
-
-rm -rf "${TMPDIR}"
 
 # -------------------------------------------------------------------
 # Summary
