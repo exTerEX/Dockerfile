@@ -18,7 +18,7 @@ Docker/OCI images for the following command‑line utilities:
 | **clinker** | Gene cluster comparison and visualisation (`clinker-py`) | 0.0.12, 0.0.19 – 0.0.32 |
 | **cblaster** | Remote homologue detection and gene cluster search (ships with `cagecleaner`) | 1.3.9, 1.3.11 – 1.3.20, 1.4.0 |
 | **defense‑finder** | Systematic search for anti‑phage defense systems | 1.0.9, 1.1.1, 1.2.0 – 1.2.2, 1.3.0, 2.0.0, 2.0.1 |
-| **rgi** | Resistance Gene Identifier (CARD) | 5.0.0, 5.1.0 – 5.2.1, 6.0.0 – 6.0.7 |
+| **rgi** | Resistance Gene Identifier (CARD) | 5.0.0, 5.1.0 – 5.2.1, 6.0.0 – 6.0.5 |
 
 Most tools are installed from the [Bioconda](https://bioconda.github.io/)
 package channel using **micromamba** running on an Alpine base image.
@@ -55,7 +55,7 @@ images for other workflows.
 │  └─ ...
 ├─ rgi/
 │  ├─ 5.0.0/Dockerfile
-│  ├─ 6.0.7/Dockerfile
+│  ├─ 6.0.5/Dockerfile
 │  └─ ...
 ├─ tests/
 │  ├─ aragorn/test.sh
@@ -87,7 +87,7 @@ docker build -t barrnap:1.0.0           ./barrnap/1.0.0
 docker build -t clinker:0.0.32          ./clinker/0.0.32
 docker build -t cblaster:1.4.0          ./cblaster/1.4.0
 docker build -t defense-finder:2.0.1    ./defense-finder/2.0.1
-docker build -t rgi:6.0.7               ./rgi/6.0.7
+docker build -t rgi:6.0.5               ./rgi/6.0.5
 ```
 
 Replace the tool name and version string as needed.

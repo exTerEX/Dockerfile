@@ -23,14 +23,14 @@ else
   fail "Non-zero exit code with --help"
 fi
 
-# 2. Version check
+# 2. Version check (defense-finder has no --version; query micromamba)
 echo ""
 echo "2) Version check"
-if OUTPUT=$(docker run --rm "${IMAGE}" --version 2>&1) && \
-   echo "${OUTPUT}" | grep -qF "${EXPECTED_VERSION}"; then
-  pass "Version string contains ${EXPECTED_VERSION}"
+if OUTPUT=$(docker run --rm --entrypoint micromamba "${IMAGE}" list -n base defense-finder 2>&1) && \
+   echo "${OUTPUT}" | grep -qE "^defense-finder[[:space:]]+${EXPECTED_VERSION}"; then
+  pass "Installed version is ${EXPECTED_VERSION}"
 else
-  fail "Version string missing (output: ${OUTPUT:0:200})"
+  fail "Version mismatch (output: ${OUTPUT:0:200})"
 fi
 
 # 3. Help output mentions defense-finder
