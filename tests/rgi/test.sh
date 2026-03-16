@@ -27,7 +27,7 @@ fi
 echo ""
 echo "2) Version check"
 if OUTPUT=$(docker run --rm --entrypoint micromamba "${IMAGE}" list -n base rgi 2>&1) && \
-   echo "${OUTPUT}" | grep -qE "^rgi[[:space:]]+${EXPECTED_VERSION}"; then
+   echo "${OUTPUT}" | grep -qE "^\s*rgi[[:space:]]+${EXPECTED_VERSION}(\s|$)"; then
   pass "Installed version is ${EXPECTED_VERSION}"
 else
   fail "Version mismatch (output: ${OUTPUT:0:200})"

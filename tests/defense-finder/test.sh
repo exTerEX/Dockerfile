@@ -27,7 +27,7 @@ fi
 echo ""
 echo "2) Version check"
 if OUTPUT=$(docker run --rm --entrypoint micromamba "${IMAGE}" list -n base defense-finder 2>&1) && \
-   echo "${OUTPUT}" | grep -qE "^defense-finder[[:space:]]+${EXPECTED_VERSION}"; then
+   echo "${OUTPUT}" | grep -qE "^\s*defense-finder[[:space:]]+${EXPECTED_VERSION}(\s|$)"; then
   pass "Installed version is ${EXPECTED_VERSION}"
 else
   fail "Version mismatch (output: ${OUTPUT:0:200})"
