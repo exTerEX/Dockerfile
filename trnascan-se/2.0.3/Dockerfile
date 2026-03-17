@@ -4,6 +4,7 @@ ARG TOOL_VERSION=2.0.3
 
 RUN micromamba install -y -n base -c bioconda -c conda-forge \
         trnascan-se=${TOOL_VERSION} \
+        libxcrypt1 \
     && micromamba clean --all --yes \
     && find /opt/conda -follow -type f -name '*.a' -delete \
     && find /opt/conda -follow -type f -name '*.pyc' -delete \
