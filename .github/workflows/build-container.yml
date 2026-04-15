@@ -5,13 +5,11 @@ on:
     paths:
       - "**/Dockerfile"
       - "tests/**"
-      - "shared/**"
   push:
     branches: [main]
     paths:
       - "**/Dockerfile"
       - "tests/**"
-      - "shared/**"
   workflow_dispatch:
 
 # Ensure only one build runs at a time per branch
@@ -66,44 +64,44 @@ jobs:
           }
 
           # ── Collect pairs to build ─────────────────────────────
+          # PUSHABLE_PAIRS: Dockerfile changed → build + push
+          # PAIRS: all pairs that need building/testing (superset)
           NULL_SHA="0000000000000000000000000000000000000000"
           if [[ -z "$BASE" || "$BASE" == "$NULL_SHA" ]]; then
-            # workflow_dispatch or initial push → build everything
+            # workflow_dispatch or initial push → build and push everything
             PAIRS=$(all_pairs)
+            PUSHABLE_PAIRS="$PAIRS"
           else
             CHANGED=$(git diff --name-only "$BASE" HEAD)
+            PAIRS=""
+            PUSHABLE_PAIRS=""
 
-            # If shared/ changed → rebuild everything
-            if echo "$CHANGED" | grep -q '^shared/'; then
-              PAIRS=$(all_pairs)
-            else
-              PAIRS=""
+            # Dockerfiles that changed → build + push that specific version
+            DF_PAIRS=$(echo "$CHANGED" | \
+              grep -E '^[^./][^/]*/[^/]+/Dockerfile$' | \
+              sed 's|/Dockerfile$||' || true)
+            PAIRS=$(printf '%s\n%s' "$PAIRS" "$DF_PAIRS")
+            PUSHABLE_PAIRS=$(printf '%s\n%s' "$PUSHABLE_PAIRS" "$DF_PAIRS")
 
-              # Dockerfiles that changed → build that specific version
-              DF_PAIRS=$(echo "$CHANGED" | \
-                grep -E '^[^./][^/]*/[^/]+/Dockerfile$' | \
-                sed 's|/Dockerfile$||' || true)
-              PAIRS=$(printf '%s\n%s' "$PAIRS" "$DF_PAIRS")
+            # Test script changed → test ALL versions of that tool (no push)
+            TOOLS=$(echo "$CHANGED" | \
+              grep -E '^tests/[^/]+/' | \
+              sed 's|^tests/||; s|/.*||' | sort -u || true)
+            for tool in $TOOLS; do
+              if [[ -d "$tool" ]]; then
+                for dir in "$tool"/*/; do
+                  [[ -f "${dir}Dockerfile" ]] && \
+                    PAIRS=$(printf '%s\n%s' "$PAIRS" "${dir%/}")
+                done
+              fi
+            done
 
-              # Test script changed → rebuild ALL versions of that tool
-              TOOLS=$(echo "$CHANGED" | \
-                grep -E '^tests/[^/]+/' | \
-                sed 's|^tests/||; s|/.*||' | sort -u || true)
-              for tool in $TOOLS; do
-                if [[ -d "$tool" ]]; then
-                  for dir in "$tool"/*/; do
-                    [[ -f "${dir}Dockerfile" ]] && \
-                      PAIRS=$(printf '%s\n%s' "$PAIRS" "${dir%/}")
-                  done
-                fi
-              done
-
-              # Deduplicate and drop blank lines
-              PAIRS=$(echo "$PAIRS" | grep -v '^$' | sort -u || true)
-            fi
+            # Deduplicate and drop blank lines
+            PAIRS=$(echo "$PAIRS" | grep -v '^$' | sort -u || true)
+            PUSHABLE_PAIRS=$(echo "$PUSHABLE_PAIRS" | grep -v '^$' | sort -u || true)
           fi
 
-          # ── Build JSON matrix with latest flag ─────────────────
+          # ── Build JSON matrix with latest + pushable flags ─────
           if [[ -z "$PAIRS" ]]; then
             echo 'matrix={"include":[]}' >> "$GITHUB_OUTPUT"
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
@@ -113,14 +111,19 @@ jobs:
               TOOL="${pair%%/*}"
               VERSION="${pair#*/}"
               LATEST=$(latest_version "$TOOL")
+              if echo "$PUSHABLE_PAIRS" | grep -qx "$pair"; then
+                PUSHABLE=true
+              else
+                PUSHABLE=false
+              fi
               if [[ "$VERSION" == "$LATEST" ]]; then
                 INCLUDES=$(echo "$INCLUDES" | \
-                  jq --arg t "$TOOL" --arg v "$VERSION" \
-                  '. + [{"tool": $t, "version": $v, "latest": true}]')
+                  jq --arg t "$TOOL" --arg v "$VERSION" --argjson p "$PUSHABLE" \
+                  '. + [{"tool": $t, "version": $v, "latest": true, "pushable": $p}]')
               else
                 INCLUDES=$(echo "$INCLUDES" | \
-                  jq --arg t "$TOOL" --arg v "$VERSION" \
-                  '. + [{"tool": $t, "version": $v}]')
+                  jq --arg t "$TOOL" --arg v "$VERSION" --argjson p "$PUSHABLE" \
+                  '. + [{"tool": $t, "version": $v, "pushable": $p}]')
               fi
             done
             MATRIX=$(echo "$INCLUDES" | jq -c '{include: .}')
@@ -165,7 +168,7 @@ jobs:
             "${{ matrix.version }}"
 
       - name: Log in to GHCR
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.pushable == true
         uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
@@ -173,7 +176,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Compute image tags
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.pushable == true
         id: tags
         run: |
           IMAGE=$(echo "${{ env.IMAGE_PREFIX }}/${{ matrix.tool }}" | tr '[:upper:]' '[:lower:]')
@@ -192,7 +195,7 @@ jobs:
           echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
 
       - name: Push image
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.pushable == true
         uses: docker/build-push-action@v7
         with:
           context: ./${{ matrix.tool }}/${{ matrix.version }}

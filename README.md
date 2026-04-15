@@ -12,35 +12,20 @@ Docker/OCI images for the following command‑line utilities:
 
 | Tool | Description | Versions |
 |------|-------------|----------|
-| **aragorn** | tRNA and tmRNA detection | 1.2.36, 1.2.38, 1.2.41 |
-| **barrnap** | Bacterial ribosomal RNA predictor (built from source via `environment.yml`) | 1.0.0 |
-| **tRNAscan‑SE** | Transfer RNA gene prediction | 2.0.0, 2.0.3, 2.0.5 – 2.0.12 |
 | **clinker** | Gene cluster comparison and visualisation (`clinker-py`) | 0.0.12, 0.0.19 – 0.0.32 |
 | **cblaster** | Remote homologue detection and gene cluster search (ships with `cagecleaner`) | 1.3.9, 1.3.11 – 1.3.20, 1.4.0 |
 | **defense‑finder** | Systematic search for anti‑phage defense systems | 1.0.9, 1.1.1, 1.2.0 – 1.2.2, 1.3.0, 2.0.0, 2.0.1 |
 | **rgi** | Resistance Gene Identifier (CARD) | 5.0.0, 5.1.0 – 5.2.1, 6.0.0 – 6.0.5 |
 
-Most tools are installed from the [Bioconda](https://bioconda.github.io/)
+All tools are installed from the [Bioconda](https://bioconda.github.io/)
 package channel using **micromamba** running on an Alpine base image.
-**barrnap** is built from its Git repository using the bundled
-`environment.yml` to install dependencies. The resulting containers are
-small and suitable for use in pipelines, Kubernetes jobs, or as base
-images for other workflows.
+The resulting containers are small and suitable for use in pipelines,
+Kubernetes jobs, or as base images for other workflows.
 
 ## Repository layout
 
 ```
 /
-├─ aragorn/
-│  ├─ 1.2.36/Dockerfile
-│  ├─ 1.2.38/Dockerfile
-│  └─ 1.2.41/Dockerfile
-├─ barrnap/
-│  └─ 1.0.0/Dockerfile
-├─ trnascan-se/
-│  ├─ 2.0.0/Dockerfile
-│  ├─ 2.0.3/Dockerfile
-│  └─ ...
 ├─ clinker/
 │  ├─ 0.0.12/Dockerfile
 │  ├─ 0.0.19/Dockerfile
@@ -58,14 +43,10 @@ images for other workflows.
 │  ├─ 6.0.5/Dockerfile
 │  └─ ...
 ├─ tests/
-│  ├─ aragorn/test.sh
-│  ├─ barrnap/test.sh
-│  ├─ trnascan-se/test.sh
 │  ├─ clinker/test.sh
 │  ├─ cblaster/test.sh
 │  ├─ defense-finder/test.sh
 │  └─ rgi/test.sh
-├─ shared/
 ├─ .github/
 │  ├─ workflows/build-container.yml        # CI workflow
 │  └─ dependabot.yml                       # dependency updates
@@ -82,8 +63,6 @@ Dockerfiles, then updating the `ARG` value.
 You can build an image manually with `docker build` or `podman`:
 
 ```sh
-docker build -t aragorn:1.2.41          ./aragorn/1.2.41
-docker build -t barrnap:1.0.0           ./barrnap/1.0.0
 docker build -t clinker:0.0.32          ./clinker/0.0.32
 docker build -t cblaster:1.4.0          ./cblaster/1.4.0
 docker build -t defense-finder:2.0.1    ./defense-finder/2.0.1
@@ -107,20 +86,24 @@ tests/clinker/test.sh test/clinker:0.0.32 0.0.32
 ## Continuous Integration
 
 A single GitHub Actions workflow (`.github/workflows/build-container.yml`)
-runs on every push to `main` and on pull requests that touch a `Dockerfile`,
-test script, or shared file. The logic is as follows:
+runs on every push to `main` and on pull requests that touch a `Dockerfile`
+or a test script. The logic is as follows:
 
-1. A **detect‑changes** job determines which `tool/version` pairs have
-   changed using `git diff`. Changes to `tests/` or `shared/` also trigger
-   the relevant images. If nothing is affected the workflow exits early.
-2. A **build** job uses a dynamic matrix containing the affected versions.
-   For each entry it:
+1. A **detect‑changes** job determines which `tool/version` pairs are
+   affected using `git diff`:
+   - A changed `Dockerfile` → build, test, **and push** that specific version.
+   - A changed test script → build and test **all** versions of that tool,
+     but **no push**.
+   - If nothing is affected the workflow exits early.
+2. A **build** job uses a dynamic matrix of affected versions. For each
+   entry it:
    - **Builds** the image locally
    - **Runs the functional test suite** against it
-   - **Pushes** the image to GHCR (only on pushes to `main`)
+   - **Pushes** the image to GHCR only when the `Dockerfile` changed and
+     the event is a push to `main`
 
 The workflow also supports manual invocation via `workflow_dispatch`, which
-rebuilds and tests every image.
+rebuilds, tests, and pushes every image.
 
 ## Dependency updates
 
@@ -139,7 +122,7 @@ either `github-actions` or `docker`.
 ## License & Attribution
 
 This repository does not contain the tools themselves, which are
-distributed under their respective licenses (GPLv3 for ARAGORN, etc.).
+distributed under their respective licenses.
 The container definitions are provided under the [MIT License](LICENSE).
 
 ---

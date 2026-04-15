@@ -11,33 +11,6 @@ updates:
       - dependencies
       - github-actions
 
-  # aragorn
-  - package-ecosystem: docker
-    directory: /aragorn/1.2.36
-    schedule:
-      interval: weekly
-    labels:
-      - dependencies
-      - docker
-
-  # aragorn
-  - package-ecosystem: docker
-    directory: /aragorn/1.2.38
-    schedule:
-      interval: weekly
-    labels:
-      - dependencies
-      - docker
-
-  # aragorn
-  - package-ecosystem: docker
-    directory: /aragorn/1.2.41
-    schedule:
-      interval: weekly
-    labels:
-      - dependencies
-      - docker
-
   # cblaster
   - package-ecosystem: docker
     directory: /cblaster/1.3.9
@@ -263,72 +236,126 @@ updates:
       - dependencies
       - docker
 
-  # trnascan-se
+  # defense-finder
   - package-ecosystem: docker
-    directory: /trnascan-se/2.0.0
+    directory: /defense-finder/1.2.2
     schedule:
       interval: weekly
     labels:
       - dependencies
       - docker
 
-  # trnascan-se
+  # defense-finder
   - package-ecosystem: docker
-    directory: /trnascan-se/2.0.3
+    directory: /defense-finder/1.3.0
     schedule:
       interval: weekly
     labels:
       - dependencies
       - docker
 
-  # trnascan-se
+  # defense-finder
   - package-ecosystem: docker
-    directory: /trnascan-se/2.0.5
+    directory: /defense-finder/2.0.0
     schedule:
       interval: weekly
     labels:
       - dependencies
       - docker
 
-  # trnascan-se
+  # defense-finder
   - package-ecosystem: docker
-    directory: /trnascan-se/2.0.6
+    directory: /defense-finder/2.0.1
     schedule:
       interval: weekly
     labels:
       - dependencies
       - docker
 
-  # trnascan-se
+  # rgi
   - package-ecosystem: docker
-    directory: /trnascan-se/2.0.7
+    directory: /rgi/5.1.0
     schedule:
       interval: weekly
     labels:
       - dependencies
       - docker
 
-  # trnascan-se
+  # rgi
   - package-ecosystem: docker
-    directory: /trnascan-se/2.0.9
+    directory: /rgi/5.1.1
     schedule:
       interval: weekly
     labels:
       - dependencies
       - docker
 
-  # trnascan-se
+  # rgi
   - package-ecosystem: docker
-    directory: /trnascan-se/2.0.11
+    directory: /rgi/5.2.0
     schedule:
       interval: weekly
     labels:
       - dependencies
       - docker
 
-  # trnascan-se
+  # rgi
   - package-ecosystem: docker
-    directory: /trnascan-se/2.0.12
+    directory: /rgi/5.2.1
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - docker
+
+  # rgi
+  - package-ecosystem: docker
+    directory: /rgi/6.0.0
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - docker
+
+  # rgi
+  - package-ecosystem: docker
+    directory: /rgi/6.0.1
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - docker
+
+  # rgi
+  - package-ecosystem: docker
+    directory: /rgi/6.0.2
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - docker
+
+  # rgi
+  - package-ecosystem: docker
+    directory: /rgi/6.0.3
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - docker
+
+  # rgi
+  - package-ecosystem: docker
+    directory: /rgi/6.0.4
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - docker
+
+  # rgi
+  - package-ecosystem: docker
+    directory: /rgi/6.0.5
     schedule:
       interval: weekly
     labels:
